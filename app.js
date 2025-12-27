@@ -9,16 +9,33 @@ const WeatherService = {
     }
     console.log(`WeatherService: Fetching for ${lat}, ${lng}`);
     try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
+      // 1. Standard Weather (Air)
+      const weatherPromise = fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&hourly=temperature_2m,weather_code,wind_speed_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,wind_speed_10m_max&timezone=auto`
       );
-      if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
-      const data = await response.json();
-      console.log("WeatherService: Data received", data);
+      // 2. Marine Data (Waves)
+      const marinePromise = fetch(
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=wave_height,wave_direction,wave_period&hourly=wave_height,wave_direction,wave_period&timezone=auto`
+      );
 
-      if (!data || !data.current) throw new Error("Dati incompleti o malformati");
-      return data;
+      const [weatherRes, marineRes] = await Promise.all([weatherPromise, marinePromise]);
+
+      if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
+      // Marine might fail for inland locations, handle gracefully
+      let marineData = null;
+      if (marineRes.ok) {
+        marineData = await marineRes.json();
+      }
+
+      const weatherData = await weatherRes.json();
+
+      // Merge Data
+      return {
+        ...weatherData,
+        marine: marineData || null
+      };
+
     } catch (error) {
       console.error("WeatherService: Caught error", error);
       throw error;
@@ -41,55 +58,78 @@ const WeatherService = {
   },
 
   calculateBeachScore(w) {
-    if (!w || !w.current) return { score: 0, label: 'N/A', sea: 'Sconosciuto', css: 'sea-choppy' };
+    if (!w || !w.current) return { score: 0, label: 'N/A', sea: 'Sconosciuto', css: 'sea-choppy', marineInfo: null };
 
     let score = 0;
     const code = w.current.weather_code;
     const temp = w.current.temperature_2m;
     const wind = w.current.wind_speed_10m;
+    const uv = w.current.uv_index; // NEW
+
+    // Marine Data (Optional, might be null if inland)
+    const waveHeight = w.marine && w.marine.current ? w.marine.current.wave_height : null;
+    const wavePeriod = w.marine && w.marine.current ? w.marine.current.wave_period : null;
 
     // 1. Weather Condition (Max 4 pts)
-    if (code === 0) score += 4; // Clear Sky
-    else if (code <= 2) score += 3; // Partly Cloudy
-    else if (code <= 3) score += 2; // Overcast
-    else if (code >= 95) score -= 2; // Thunderstorm
-    else if (code >= 51) score -= 1; // Rain
+    if (code === 0) score += 4;
+    else if (code <= 2) score += 3;
+    else if (code <= 3) score += 2;
+    else if (code >= 95) score -= 2;
+    else if (code >= 51) score -= 1;
 
-    // 2. Wind / Sea (Max 3 pts)
-    // Ideal wind < 10km/h
-    if (wind < 10) score += 3;
-    else if (wind < 20) score += 2;
-    else if (wind < 30) score += 1;
-    else score -= 1; // Windy
+    // 2. Wind / Sea / Waves (Max 3 pts)
+    // If we have wave height, use it! It's more accurate than wind.
+    if (waveHeight !== null) {
+      if (waveHeight < 0.3) score += 3; // Flat
+      else if (waveHeight < 0.8) score += 2; // Moderate
+      else if (waveHeight < 1.5) score += 1; // Rough
+      else score -= 1; // Very Rough
+    } else {
+      // Fallback to wind
+      if (wind < 10) score += 3;
+      else if (wind < 20) score += 2;
+      else if (wind < 30) score += 1;
+      else score -= 1;
+    }
 
     // 3. Temperature (Max 3 pts)
-    // Ideal beach temp 25-32
     if (temp >= 25 && temp <= 32) score += 3;
     else if (temp >= 20) score += 2;
     else if (temp >= 15) score += 1;
-    else score -= 1; // Too cold
+    else score -= 1;
 
-    // Normalize to 0-10 then to 1-5
-    // Max raw score approx 10. Min approx -4.
-    // Let's map robustly:
-    // Raw 10 -> 5.0
-    // Raw 5 -> 2.5
-    // Raw < 0 -> 1.0
-
-    let finalScore = (score / 2); // 0-5 scale roughly
+    // Normalize
+    let finalScore = (score / 2);
     if (finalScore > 5) finalScore = 5;
     if (finalScore < 1) finalScore = 1;
 
     // Formatting
     const scoreStr = finalScore.toFixed(1).replace('.', ',');
 
-    // Sea Condition
+    // Sea Condition Label
     let seaLabel = "Calmo 🌊";
     let seaCss = "sea-calm";
-    if (wind >= 10 && wind < 25) { seaLabel = "Poco Mosso 〰️"; seaCss = "sea-choppy"; }
-    else if (wind >= 25) { seaLabel = "Mosso/Agitato 🌊💨"; seaCss = "sea-rough"; }
 
-    return { score: scoreStr, raw: finalScore, sea: seaLabel, css: seaCss };
+    if (waveHeight !== null) {
+      if (waveHeight >= 0.5 && waveHeight < 1.2) { seaLabel = "Mosso 〰️"; seaCss = "sea-choppy"; }
+      else if (waveHeight >= 1.2) { seaLabel = "Agitato 🌊💨"; seaCss = "sea-rough"; }
+    } else {
+      // Fallback
+      if (wind >= 15 && wind < 28) { seaLabel = "Mosso 〰️"; seaCss = "sea-choppy"; }
+      else if (wind >= 28) { seaLabel = "Agitato 🌊💨"; seaCss = "sea-rough"; }
+    }
+
+    return {
+      score: scoreStr,
+      raw: finalScore,
+      sea: seaLabel,
+      css: seaCss,
+      marine: {
+        waveHeight: waveHeight !== null ? waveHeight.toFixed(1) + ' m' : 'N/D',
+        wavePeriod: wavePeriod !== null ? wavePeriod.toFixed(0) + ' s' : 'N/D',
+        uv: uv ? uv.toFixed(1) : '-'
+      }
+    };
   }
 };
 
@@ -492,6 +532,7 @@ const App = {
     selectedBeach: null,
     weatherData: null,
     weatherError: null,
+    selectedDayOffset: 0,
     // Navigation State
     selectedContinent: 'Europa', // Default open
     selectedCountry: null,
@@ -550,6 +591,7 @@ const App = {
     // Reset selection to prevent lingering state
     this.state.selectedBeach = null;
     this.state.weatherData = null;
+    this.state.selectedDayOffset = 0;
 
     if (this.state.view === 'map-explorer') {
       this.navigateTo('results');
@@ -561,6 +603,11 @@ const App = {
     } else {
       this.navigateTo('home');
     }
+  },
+
+  selectDay(offset) {
+    this.state.selectedDayOffset = offset;
+    this.render();
   },
 
   // --- RENDER FUNCTIONS ---
@@ -1478,7 +1525,7 @@ const App = {
       `;
     };
 
-    // Main Template - SIMPLIFIED
+    // Main Template - INTERACTIVE WEATHER TABLE
     return `
       <div class="container">
         <div class="detail-layout">
@@ -1506,11 +1553,11 @@ const App = {
                    </div>
                 </div>
                 
-                <!-- COL 2: MAP -->
+                <!-- COL 2: GOOGLE MAP (Restored) -->
                 <div>
-                    <div id="map" class="map-container" style="margin-top:0; height: 300px;"></div>
+                    <div id="map" class="map-container" style="margin-top:0; height: 350px;"></div>
                     <a href="https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}" target="_blank" class="btn btn-primary" style="margin-top: 1rem; width:100%; justify-content:center;">
-                      <i data-lucide="navigation"></i> Portami Qui (Google Maps)
+                      <i data-lucide="navigation"></i> Portami Qui (Navigatore)
                     </a>
                 </div>
             </div>
@@ -1521,13 +1568,13 @@ const App = {
             </div>
             
             ${(() => {
-        if (w === null) {
+        if (this.state.weatherError) {
           return `
                        <div class="weather-widget" style="background: linear-gradient(135deg, #64748b, #475569);">
                           <div style="padding: 2rem; text-align:center; color: #ef4444; border: 2px dashed red;">
                              <i data-lucide="cloud-off" style="margin-bottom:0.5rem;"></i>
                              <p style="font-weight:bold; font-size:1.2rem;">ERRORE METEO</p>
-                             <p>${this.state.weatherError || "Nessun dettaglio errore"}</p>
+                             <p>${this.state.weatherError}</p>
                           </div>
                        </div>`;
         }
@@ -1543,28 +1590,147 @@ const App = {
         const scoreData = WeatherService.calculateBeachScore(w);
         const color = scoreData.raw >= 4 ? '#22c55e' : scoreData.raw >= 2.5 ? '#eab308' : '#ef4444';
 
+        // State for selected day
+        const selectedDayOffset = this.state.selectedDayOffset || 0;
+        const daily = w.daily;
+        const currentHourlyParams = w.hourly;
+
+        // Helper for specific day data
+        const getDayData = (idx) => {
+          return {
+            time: daily.time[idx],
+            code: daily.weather_code[idx],
+            min: Math.round(daily.temperature_2m_min[idx]),
+            max: Math.round(daily.temperature_2m_max[idx]),
+            windMax: Math.round(daily.wind_speed_10m_max[idx]),
+            uv: daily.uv_index_max ? daily.uv_index_max[idx].toFixed(1) : '-',
+          };
+        };
+
+        const selectedDay = getDayData(selectedDayOffset);
+
+        // Filter hourly for selected day
+        const selectedDateStr = selectedDay.time;
+        const hourlyIndices = currentHourlyParams.time
+          .map((t, i) => ({ t, i }))
+          .filter(item => item.t.startsWith(selectedDateStr))
+          .map(item => item.i);
+
         return `
                   <div class="score-card">
                      <div style="position:relative; z-index:1;">
                          <h3 style="margin:0; font-size:1.2rem; color:white; font-weight:700;">Beach Score</h3>
                          <div class="sea-badge ${scoreData.css}">${scoreData.sea}</div>
+                         <div class="score-text-muted" style="color:rgba(255,255,255,0.8);">
+                             ${scoreData.raw >= 4 ? "Condizioni ideali per nuotare! 🏊" :
+            scoreData.raw >= 2.5 ? "Buono, ma occhio al vento/onde. 🏄" : "Condizioni difficili. Prudenza! ⚠️"}
+                         </div>
                      </div>
                      <div class="score-circle" style="color:${color};">
                          ${scoreData.score}
                      </div>
                   </div>
 
-                  <div class="weather-row">
-                     <div class="weather-widget" style="margin-bottom:0;">
-                         <div style="display:flex; align-items:center; gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2);">
-                              <div style="font-size: 4rem; font-weight: 700; line-height: 1;">${Math.round(w.current.temperature_2m)}°</div>
-                              <div>
-                                   <div style="font-size: 1.25rem; font-weight: 500;">${WeatherService.getWeatherLabel(w.current.weather_code)}</div>
-                              </div>
-                         </div>
-                         ${renderHourly()}
-                     </div>
-                     ${renderDaily()}
+                  <!-- WINDY MAP (Standalone, Outside Weather Widget) -->
+                  <div style="margin-bottom: 2rem; border-radius: 1rem; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                      <div style="background: rgba(255,255,255,0.05); padding: 0.8rem 1.2rem; display:flex; justify-content:space-between; align-items:center;">
+                          <h4 style="margin:0; opacity:0.9;">Mappa Vento & Mare</h4>
+                          <span style="font-size:0.8rem; opacity:0.6;">Dati in tempo reale (Windy.com)</span>
+                      </div>
+                      <iframe 
+                            width="100%" 
+                            height="400" 
+                            src="https://embed.windy.com/embed2.html?lat=${b.lat}&lon=${b.lng}&detailLat=${b.lat}&detailLon=${b.lng}&width=650&height=450&zoom=9&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" 
+                            frameborder="0">
+                      </iframe>
+                  </div>
+
+                  <!-- NEW WEATHER SECTION: TABLE + DETAIL -->
+                  <div class="weather-container">
+                      
+                      <!-- 1. DAILY TABLE (Selectable) -->
+                      <div class="weather-widget" style="padding:0; overflow:hidden;">
+                          <div style="padding:1rem; background:rgba(255,255,255,0.05); font-weight:600;">Previsioni Settimanali</div>
+                          <div style="display:flex; flex-direction:column;">
+                              ${daily.time.slice(0, 7).map((t, i) => {
+              const d = getDayData(i);
+              const dayName = new Date(t).toLocaleDateString('it-IT', { weekday: 'long' });
+              const dateNum = new Date(t).getDate();
+              const isSelected = i === selectedDayOffset;
+
+              return `
+                                    <div onclick="window.App.selectDay(${i})" 
+                                         style="display:grid; grid-template-columns: 2fr 1fr 2fr 1.5fr; gap:0.5rem; align-items:center; padding: 1rem; cursor:pointer; transition:background 0.2s; border-bottom:1px solid rgba(255,255,255,0.05); background: ${isSelected ? 'rgba(255,255,255,0.15)' : 'transparent'};">
+                                         
+                                         <div style="display:flex; flex-direction:column;">
+                                            <span style="text-transform:capitalize; font-weight:600; color:${isSelected ? 'white' : 'var(--text-muted)'}">${dayName} ${dateNum}</span>
+                                            <span style="font-size:0.8rem; opacity:0.7;">${WeatherService.getWeatherLabel(d.code)}</span>
+                                         </div>
+
+                                         <div style="font-size:1.5rem;">
+                                            ${WeatherService.getWeatherLabel(d.code).includes('Pioggia') ? '🌧️' :
+                  WeatherService.getWeatherLabel(d.code).includes('Sole') || d.code === 0 ? '☀️' : '☁️'}
+                                         </div>
+
+                                         <div style="text-align:right; font-weight:600;">
+                                            ${d.min}° / ${d.max}°
+                                         </div>
+                                         
+                                         <div style="text-align:right; font-size:0.85rem; opacity:0.8;">
+                                            <i data-lucide="wind" style="width:12px; display:inline-block;"></i> ${d.windMax}
+                                         </div>
+                                    </div>
+                                  `;
+            }).join('')}
+                          </div>
+                      </div>
+
+                      <!-- 2. SELECTED DAY DETAIL -->
+                      <div class="weather-widget" style="margin-top:1.5rem;">
+                           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                               <h4 style="margin:0;">Dettagli: ${new Date(selectedDay.time).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</h4>
+                               <div style="font-weight:700; font-size:1.2rem;">${selectedDay.max}° <span style="font-size:0.9rem; opacity:0.7;">max</span></div>
+                           </div>
+
+                           <!-- Hourly for Selected Day -->
+                           <div style="display:flex; overflow-x:auto; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:1rem;">
+                               ${hourlyIndices.length > 0 ? hourlyIndices.map(idx => {
+              const hCode = currentHourlyParams.weather_code[idx];
+              const hTemp = Math.round(currentHourlyParams.temperature_2m[idx]);
+              const hWind = Math.round(currentHourlyParams.wind_speed_10m[idx]);
+              const timeStr = currentHourlyParams.time[idx].split('T')[1];
+
+              return `
+                                       <div style="min-width:70px; display:flex; flex-direction:column; align-items:center; gap:0.3rem; padding:0.5rem; background:rgba(255,255,255,0.05); border-radius:0.5rem;">
+                                           <span style="font-size:0.8rem; opacity:0.8;">${timeStr}</span>
+                                           <span style="font-size:1.5rem;">${WeatherService.getWeatherLabel(hCode).includes('Pioggia') ? '🌧️' :
+                  WeatherService.getWeatherLabel(hCode).includes('Sole') || hCode === 0 ? '☀️' : '☁️'
+                }</span>
+                                           <span style="font-weight:700;">${hTemp}°</span>
+                                           <span style="font-size:0.7rem; opacity:0.7;">💨 ${hWind}</span>
+                                       </div>
+                                   `;
+            }).join('') : '<div style="padding:1rem; opacity:0.6;">Dati orari non disponibili per questa data (limite API)</div>'}
+                           </div>
+                           
+                           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                               <div style="background:rgba(255,255,255,0.05); padding:0.8rem; border-radius:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                                   <i data-lucide="sun"></i>
+                                   <div>
+                                       <div style="font-size:0.7rem; opacity:0.7;">UV Index Max</div>
+                                       <div style="font-weight:600;">${selectedDay.uv}</div>
+                                   </div>
+                               </div>
+                               <div style="background:rgba(255,255,255,0.05); padding:0.8rem; border-radius:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                                   <i data-lucide="wind"></i>
+                                   <div>
+                                       <div style="font-size:0.7rem; opacity:0.7;">Vento Max</div>
+                                       <div style="font-weight:600;">${selectedDay.windMax} km/h</div>
+                                   </div>
+                               </div>
+                           </div>
+                      </div>
+
                   </div>
                 `;
       })()} 
