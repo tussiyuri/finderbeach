@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinderBeach | Trova il tuo paradiso</title>
+
+    <!-- SEO & Metadata -->
+    <meta name="description"
+        content="FinderBeach: la tua app per trovare le migliori spiagge, controllare il meteo, il vento e le condizioni del mare in tempo reale. Pianifica la tua giornata perfetta.">
+    <meta name="keywords"
+        content="spiagge, meteo mare, vento, previsioni meteo, finderbeach, vacanze, mare, mappa spiagge, condizioni marine">
+    <meta name="author" content="FinderBeach Team">
+    <meta name="robots" content="index, follow">
+    <meta name="google-site-verification" content="n7hNIlwnlmpPAqwS8tWhcfs7Xf304WSqNGSh1xGsiB8" />
+
+    <!-- Open Graph (Social Sharing) -->
+    <meta property="og:title" content="FinderBeach | Trova il tuo paradiso">
+    <meta property="og:description"
+        content="Scopri le spiagge migliori, il meteo in tempo reale e le condizioni del vento.">
+    <meta property="og:image"
+        content="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=630&fit=crop">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4334/4334235.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4334/4334235.png">
+
+    <!-- Fonts: Outlook & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <div id="app"></div>
+
+    <!-- Emergency Error Handler -->
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            document.body.innerHTML += '<div style="position:fixed; top:0; left:0; width:100%; background:red; color:white; padding:20px; z-index:9999;">JS Error: ' + msg + ' at line ' + line + '</div>';
+            return false;
+        };
+    </script>
+
+    <!-- Google Maps API (Classic Sync Loader for Reliability) -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMRExprsXJf-Zg2HKF3IUdJzvD1C15WXI&libraries=places,geometry"></script>
+
+    <!-- App Logic -->
+    <!-- App Logic -->
+    <script src="app.js?v=prod-final-release"></script>
+    <script>
+        // AGGRESSIVE CACHE CLEARING FOR DEBUGGING
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                for (let registration of registrations) {
+                    console.log('Unregistering SW:', registration);
+                    registration.unregister();
+                }
+                if (registrations.length > 0) {
+                    console.log("Service Workers cleared. You may need to reload.");
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
