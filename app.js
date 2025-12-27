@@ -1492,7 +1492,7 @@ const App = {
                    <img src="${heroImage}" 
                      class="gallery-hero" 
                      id="gallery-hero-img"
-                     style="margin-bottom:0; height: 350px;"
+                     style="margin-bottom:0;"
                      alt="${b.name}"
                      onerror="this.onerror=null; this.src=window.BeachImageService.getImage('${b.name.replace(/'/g, "\\'")}')">
                    
