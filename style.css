@@ -398,7 +398,7 @@ h4 {
     .detail-layout,
     .weather-row,
     .hero-grid-split {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
 
     .hero-title {
