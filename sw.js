@@ -1,4 +1,4 @@
-const CACHE_NAME = 'beach-finder-prod-v1';
+const CACHE_NAME = 'beach-finder-prod-v11';
 const ASSETS = [
     './',
     './index.html',

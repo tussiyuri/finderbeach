@@ -11,7 +11,7 @@ const WeatherService = {
     try {
       // 1. Standard Weather (Air)
       const weatherPromise = fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&hourly=temperature_2m,weather_code,wind_speed_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,wind_speed_10m_max&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&hourly=temperature_2m,weather_code,wind_speed_10m,uv_index,precipitation_probability,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,wind_speed_10m_max,sunrise,sunset,precipitation_sum&timezone=auto`
       );
 
       // 2. Marine Data (Waves)
@@ -493,33 +493,76 @@ window.BeachImageService = BeachImageService;
 // --- DATA: DESTINATIONS ---
 const Destinations = {
   "Europa": {
-    "Italia": ["Sardegna", "Sicilia", "Puglia", "Toscana", "Liguria"],
-    "Spagna": ["Ibiza", "Formentera", "Mallorca", "Menorca", "Tenerife"],
-    "Grecia": ["Creta", "Santorini", "Mykonos", "Rodi", "Zante"],
-    "Francia": ["Costa Azzurra", "Corsica", "Normandia"],
-    "Portogallo": ["Algarve", "Madeira"]
+    "Italia": ["Sardegna", "Sicilia", "Puglia", "Toscana", "Liguria", "Costiera Amalfitana", "Calabria"],
+    "Spagna": ["Ibiza", "Formentera", "Mallorca", "Menorca", "Tenerife", "Lanzarote", "Gran Canaria", "Costa Brava", "Andalusia"],
+    "Grecia": ["Creta", "Santorini", "Mykonos", "Rodi", "Zante", "Corfù", "Naxos", "Paros", "Kos"],
+    "Francia": ["Costa Azzurra", "Corsica", "Normandia", "Biarritz", "Bretagna"],
+    "Portogallo": ["Algarve", "Madeira", "Azzorre", "Lisbona Coast"],
+    "Croazia": ["Hvar", "Brac", "Dubrovnik", "Zara", "Spalato", "Istria"],
+    "Malta": ["Blue Lagoon", "Golden Bay", "Mellieha"],
+    "Cipro": ["Ayia Napa", "Protaras", "Paphos"],
+    "Turchia": ["Antalya", "Bodrum", "Oludeniz", "Kas"],
+    "Albania": ["Ksamil", "Saranda", "Dhermi"],
+    "Montenegro": ["Budva", "Kotor", "Sveti Stefan"]
   },
   "Asia": {
-    "Thailandia": ["Phuket", "Koh Samui", "Phi Phi Islands", "Krabi"],
-    "Indonesia": ["Bali", "Lombok", "Gili Islands"],
-    "Maldive": ["Atollo di Malé", "Atollo di Ari"],
-    "Filippine": ["Palawan", "Boracay"]
+    "Thailandia": ["Phuket", "Koh Samui", "Phi Phi Islands", "Krabi", "Koh Tao", "Koh Lipe"],
+    "Indonesia": ["Bali", "Lombok", "Gili Islands", "Raja Ampat", "Komodo", "Sumba"],
+    "Maldive": ["Atollo di Malé", "Atollo di Ari", "Atollo di Baa", "Atollo di Lhaviyani"],
+    "Filippine": ["Palawan", "Boracay", "Siargao", "El Nido", "Cebu", "Bohol"],
+    "Vietnam": ["Phu Quoc", "Mui Ne", "Da Nang", "Hoi An", "Nha Trang"],
+    "Giappone": ["Okinawa", "Miyakojima", "Ishigaki", "Kamakura"],
+    "Malesia": ["Langkawi", "Perhentian Islands", "Tioman", "Borneo"],
+    "Sri Lanka": ["Mirissa", "Unawatuna", "Arugam Bay", "Trincomalee"],
+    "India": ["Goa", "Kerala", "Andamane", "Pondicherry"],
+    "Cambogia": ["Koh Rong", "Koh Rong Sanloem"]
   },
-  "Americhe": {
-    "USA": ["Miami / Florida", "Hawaii", "California", "Hamptons"],
-    "Messico": ["Tulum", "Cancun", "Playa del Carmen", "Cabo San Lucas"],
-    "Caraibi": ["Bahamas", "Turks & Caicos", "Aruba", "Jamaica"],
-    "Brasile": ["Copacabana", "Ipanema", "Fernando de Noronha"]
+  "Nord America": {
+    "USA": ["Miami / Florida", "Hawaii", "California", "Hamptons", "Key West", "Outer Banks", "Cape Cod"],
+    "Messico": ["Tulum", "Cancun", "Playa del Carmen", "Cabo San Lucas", "Puerto Escondido", "Sayulita", "Isla Mujeres"],
+    "Canada": ["Tofino (BC)", "Prince Edward Island", "Hopewell Rocks"]
+  },
+  "Centro America": {
+    "El Salvador": ["El Tunco", "El Zonte", "Costa del Sol", "El Cuco", "La Libertad"],
+    "Costa Rica": ["Tamarindo", "Santa Teresa", "Manuel Antonio", "Puerto Viejo", "Nosara"],
+    "Panama": ["Bocas del Toro", "San Blas", "Santa Catalina"],
+    "Belize": ["Ambergris Caye", "Caye Caulker", "Placencia"],
+    "Honduras": ["Roatan", "Utila"],
+    "Nicaragua": ["San Juan del Sur", "Popoyo", "Corn Islands"],
+    "Guatemala": ["Monterrico"],
+    "Caraibi": ["Bahamas", "Turks & Caicos", "Aruba", "Jamaica", "Repubblica Dominicana", "Barbados", "Santa Lucia", "Antigua", "Cuba", "Puerto Rico"]
+  },
+  "Sud America": {
+    "Brasile": ["Copacabana", "Ipanema", "Fernando de Noronha", "Florianopolis", "Jericoacoara", "Pipa", "Bahia"],
+    "Colombia": ["San Andres", "Cartagena", "Parque Tayrona", "Santa Marta", "Palomino"],
+    "Venezuela": ["Los Roques", "Isla Margarita"],
+    "Perù": ["Mancora", "Punta Sal"],
+    "Ecuador": ["Montanita", "Galapagos"],
+    "Cile": ["Vina del Mar", "Iquique"],
+    "Argentina": ["Mar del Plata"],
+    "Uruguay": ["Punta del Este", "Cabo Polonio"]
   },
   "Oceania": {
-    "Australia": ["Gold Coast", "Whitehaven Beach", "Bondi Beach"],
-    "Polinesia": ["Bora Bora", "Tahiti", "Moorea"],
-    "Fiji": ["Mamanuca Islands", "Yasawa Islands"]
+    "Australia": ["Gold Coast", "Whitehaven Beach", "Bondi Beach", "Byron Bay", "Great Ocean Road", "Noosa", "Perth"],
+    "Polinesia": ["Bora Bora", "Tahiti", "Moorea", "Rangiroa", "Huahine"],
+    "Fiji": ["Mamanuca Islands", "Yasawa Islands"],
+    "Nuova Zelanda": ["Coromandel", "Abel Tasman", "Bay of Islands"],
+    "Isole Cook": ["Rarotonga", "Aitutaki"],
+    "Samoa": ["Lalomanu"],
+    "Tonga": ["Ha'apai"]
   },
   "Africa": {
-    "Egitto": ["Sharm El Sheikh", "Marsa Alam", "Hurghada"],
-    "Zanzibar": ["Nungwi", "Kendwa"],
-    "Seychelles": ["La Digue", "Praslin", "Mahe"]
+    "Egitto": ["Sharm El Sheikh", "Marsa Alam", "Hurghada", "Dahab", "Marsa Matruh"],
+    "Zanzibar": ["Nungwi", "Kendwa", "Paje", "Jambiani"],
+    "Seychelles": ["La Digue", "Praslin", "Mahe"],
+    "Mauritius": ["Le Morne", "Flic en Flac", "Belle Mare"],
+    "Madagascar": ["Nosy Be", "Ile Sainte Marie"],
+    "Sudafrica": ["Camps Bay", "Boulders Beach", "Durban", "Garden Route"],
+    "Kenya": ["Diani Beach", "Watamu", "Malindi"],
+    "Marocco": ["Agadir", "Essaouira", "Taghazout"],
+    "Tunisia": ["Djerba", "Hammamet"],
+    "Capo Verde": ["Sal", "Boa Vista"],
+    "Mozambico": ["Bazaruto", "Tofo"]
   }
 };
 
@@ -533,6 +576,7 @@ const App = {
     weatherData: null,
     weatherError: null,
     selectedDayOffset: 0,
+    hourlyDisplayMode: '1h', // Explicit init
     // Navigation State
     selectedContinent: 'Europa', // Default open
     selectedCountry: null,
@@ -544,6 +588,7 @@ const App = {
   },
 
   init() {
+    console.log("🚀 App v19 LOADED");
     BeachService.allBeaches = [...BeachService.localBeaches];
 
     // Load Recent Searches (Safeguarded & Hydrated)
@@ -592,6 +637,7 @@ const App = {
     this.state.selectedBeach = null;
     this.state.weatherData = null;
     this.state.selectedDayOffset = 0;
+    this.state.hourlyDisplayMode = '1h'; // Reset hourly display mode
 
     if (this.state.view === 'map-explorer') {
       this.navigateTo('results');
@@ -607,6 +653,11 @@ const App = {
 
   selectDay(offset) {
     this.state.selectedDayOffset = offset;
+    this.render();
+  },
+
+  setHourlyDisplayMode(mode) {
+    this.state.hourlyDisplayMode = mode;
     this.render();
   },
 
@@ -874,22 +925,13 @@ const App = {
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
 
-        if (!place.geometry) {
-          // User hit enter without selecting suggestion
+        // UNIFIED SEARCH LOGIC:
+        // Always treat autocomplete selection as a text query (handleSearch(name)),
+        // ignoring the specific geometry. This ensures results match "manual typing".
+        if (place.name) {
+          console.log("Autocomplete Selected (Processed as Text):", place.name);
           this.handleSearch(place.name);
-          return;
         }
-
-        // User selected a suggestion - PASS LOCATION & COUNTRY FOR RADAR SEARCH
-        console.log("Selected from Autocomplete:", place.name, place.geometry.location);
-
-        let countryCode = null;
-        if (place.address_components) {
-          const country = place.address_components.find(c => c.types.includes('country'));
-          if (country) countryCode = country.short_name;
-        }
-
-        this.handleSearch(place.name, place.geometry.location, countryCode);
       });
     }, 500); // Slight delay to ensure DOM and Google JS
   },
@@ -1452,117 +1494,58 @@ const App = {
     const currentIdx = this.state.currentGalleryIndex || 0;
     const heroImage = galleryImages[currentIdx] || b.preview;
 
-    // --- RENDER HELPERS ---
-
-    // Hourly
-    const renderHourly = () => {
-      if (!w || !w.hourly) return '';
-      const currentHour = new Date().getHours();
-      const nextHoursIndices = w.hourly.time
-        .map((t, i) => ({ t, i, h: new Date(t).getHours() }))
-        .filter(obj => obj.h >= currentHour)
-        .slice(0, 6);
-
-      if (nextHoursIndices.length === 0) return '';
-
-      return `
-             <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2);">
-               <h4 style="margin-bottom:1rem; opacity:0.9; font-size:1rem;">Prossime Ore</h4>
-               <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                 ${nextHoursIndices.map(obj => {
-        const i = obj.i;
-        const code = w.hourly.weather_code[i];
-        const temp = Math.round(w.hourly.temperature_2m[i]);
-        const wind = Math.round(w.hourly.wind_speed_10m[i]);
-        const hour = obj.h.toString().padStart(2, '0');
-        return `
-                      <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.8rem; background:rgba(255,255,255,0.1); border-radius:0.5rem;">
-                         <div style="font-weight:600; width:50px;">${hour}:00</div>
-                         <div style="flex:1; display:flex; align-items:center; gap:0.5rem;">
-                           <span style="font-size:1.2rem;">${WeatherService.getWeatherLabel(code).includes('Pioggia') ? '🌧️' :
-            WeatherService.getWeatherLabel(code).includes('Sole') || code === 0 ? '☀️' : '☁️'}</span>
-                           <span style="font-size:0.9rem; opacity:0.9;">${WeatherService.getWeatherLabel(code)}</span>
-                         </div>
-                         <div style="display:flex; gap: 1rem; align-items:center;">
-                            <div style="opacity:0.8; font-size:0.8rem;">${wind} km/h</div>
-                            <div style="font-weight:700;">${temp}°</div>
-                         </div>
-                      </div>
-                    `;
-      }).join('')}
-               </div>
-             </div>
-      `;
-    };
-
-    // Daily
-    const renderDaily = () => {
-      if (!w || !w.daily) return '';
-      return `
-             <div class="weather-widget" style="background: linear-gradient(135deg, #64748b, #475569);">
-               <h4 style="margin-bottom:1rem; opacity:0.9;">Prossimi Giorni</h4>
-               <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                 ${w.daily.time.slice(1, 6).map((t, i) => {
-        const idx = i + 1; // skip today
-        // Safety check
-        if (!w.daily.weather_code[idx]) return '';
-
-        const code = w.daily.weather_code[idx];
-        const min = Math.round(w.daily.temperature_2m_min[idx]);
-        const max = Math.round(w.daily.temperature_2m_max[idx]);
-        const dayName = new Date(t).toLocaleDateString('it-IT', { weekday: 'long' });
-
-        return `
-                      <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.8rem; background:rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1); border-radius: 0.5rem;">
-                         <div style="text-transform:capitalize; width: 100px; font-weight:500;">${dayName}</div>
-                         <div style="flex:1; text-align:center; opacity:0.9; font-size:0.9rem;">${WeatherService.getWeatherLabel(code)}</div>
-                         <div style="font-weight:700; width:80px; text-align:right;">${min}° / ${max}°</div>
-                      </div>
-                    `;
-      }).join('')}
-               </div>
-             </div>
-      `;
-    };
-
     // Main Template - INTERACTIVE WEATHER TABLE
     return `
-      <div class="container">
+      <div class="container" style="padding-top:2rem;">
         <div class="detail-layout">
           <div>
             <div style="margin-bottom:1rem;"><button class="btn btn-ghost" onclick="window.App.goBack()"><i data-lucide="arrow-left"></i> Indietro</button></div>
             
             <!-- HERO GRID SPLIT -->
-            <div class="hero-grid-split">
-                <!-- COL 1: PHOTO -->
-                <div>
-                   <img src="${heroImage}" 
-                     class="gallery-hero" 
-                     id="gallery-hero-img"
-                     style="margin-bottom:0;"
-                     alt="${b.name}"
-                     onerror="this.onerror=null; this.src=window.BeachImageService.getImage('${b.name.replace(/'/g, "\\'")}')">
+            <div class="hero-grid-split" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
+                
+                <!-- COL 1: PHOTO & GALLERY -->
+                <div class="group" style="position:relative;">
+                   <div style="position:relative; overflow:hidden; border-radius: 1rem; height:350px;">
+                       <img src="${heroImage}" 
+                         class="gallery-hero" 
+                         id="gallery-hero-img"
+                         style="width:100%; height:100%; object-fit:cover;"
+                         alt="${b.name}">
+                       
+                       <!-- ARROWS -->
+                       ${galleryImages.length > 1 ? `
+                       <button onclick="window.App.nextImage(-1)" class="gallery-arrow left" style="position:absolute; top:50%; left:10px; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; padding:0.5rem; border-radius:50%; cursor:pointer;">
+                          <i data-lucide="chevron-left"></i>
+                       </button>
+                       <button onclick="window.App.nextImage(1)" class="gallery-arrow right" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; padding:0.5rem; border-radius:50%; cursor:pointer;">
+                          <i data-lucide="chevron-right"></i>
+                       </button>
+                       ` : ''}
+                   </div>
                    
                    <!-- THUMBNAILS -->
+                   ${galleryImages.length > 1 ? `
                    <div style="display:flex; gap:0.5rem; overflow-x:auto; margin-top:0.5rem; padding-bottom:0.5rem;">
                       ${galleryImages.map((src, i) => `
                         <img src="${src}" class="gallery-thumbnail ${i === currentIdx ? 'active' : ''}" 
                              onclick="window.App.setGalleryImage(${i})"
-                             style="width:60px; height:60px; border-radius:4px; object-fit:cover; cursor:pointer; flex-shrink:0;">
+                             style="width:60px; height:60px; border-radius:4px; object-fit:cover; cursor:pointer; flex-shrink:0; border: 2px solid ${i === currentIdx ? 'var(--primary)' : 'transparent'};">
                       `).join('')}
                    </div>
+                   ` : ''}
                 </div>
                 
-                <!-- COL 2: GOOGLE MAP (Restored) -->
+                <!-- COL 2: GOOGLE MAP -->
                 <div>
-                    <div id="map" class="map-container" style="margin-top:0; height: 350px;"></div>
+                    <div id="map" class="map-container" style="margin-top:0; height: 350px; border-radius:1rem; overflow:hidden;"></div>
                     <a href="https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}" target="_blank" class="btn btn-primary" style="margin-top: 1rem; width:100%; justify-content:center;">
                       <i data-lucide="navigation"></i> Portami Qui (Navigatore)
                     </a>
                 </div>
             </div>
 
-            <h1>${b.name}</h1>
+            <h1 style="font-size: 2rem; margin-bottom: 0.5rem; line-height: 1.2;">${b.name}</h1>
             <div style="display:flex; align-items:center; gap:0.5rem; color:var(--text-muted); margin-bottom: 2rem;">
                <i data-lucide="map-pin"></i> ${b.location}
             </div>
@@ -1595,6 +1578,9 @@ const App = {
         const daily = w.daily;
         const currentHourlyParams = w.hourly;
 
+        // Marine Hourly
+        const marineHourly = w.marine && w.marine.hourly ? w.marine.hourly : null;
+
         // Helper for specific day data
         const getDayData = (idx) => {
           return {
@@ -1604,6 +1590,8 @@ const App = {
             max: Math.round(daily.temperature_2m_max[idx]),
             windMax: Math.round(daily.wind_speed_10m_max[idx]),
             uv: daily.uv_index_max ? daily.uv_index_max[idx].toFixed(1) : '-',
+            sunrise: daily.sunrise ? daily.sunrise[idx].split('T')[1] : null,
+            sunset: daily.sunset ? daily.sunset[idx].split('T')[1] : null,
           };
         };
 
@@ -1611,10 +1599,190 @@ const App = {
 
         // Filter hourly for selected day
         const selectedDateStr = selectedDay.time;
+
+        // Find start/end indices for this day in hourly arrays
         const hourlyIndices = currentHourlyParams.time
           .map((t, i) => ({ t, i }))
           .filter(item => item.t.startsWith(selectedDateStr))
           .map(item => item.i);
+
+        // RENDER FUNCTIONS
+
+        const renderDaySelector = () => {
+          return `
+            <div class="day-selector-vertical">
+                ${daily.time.slice(0, 7).map((t, i) => {
+            const date = new Date(t);
+            const dayName = date.toLocaleDateString('it-IT', { weekday: 'short' }).toUpperCase();
+            const dayNum = date.getDate();
+            const isSelected = i === selectedDayOffset;
+            const dailyCode = daily.weather_code[i];
+
+            // Temps
+            const minT = Math.round(daily.temperature_2m_min[i]);
+            const maxT = Math.round(daily.temperature_2m_max[i]);
+
+            return `
+                        <div class="day-item-vertical ${isSelected ? 'active' : ''}" onclick="window.App.selectDay(${i})">
+                            <div style="font-weight:700; font-size:0.9rem; line-height:1;">${dayName} ${dayNum}</div>
+                            <div style="font-size:1.5rem; margin:0.2rem 0;">
+                                ${WeatherService.getWeatherLabel(dailyCode).includes('Pioggia') ? '🌧️' :
+                dailyCode === 0 ? '☀️' : dailyCode < 3 ? '⛅' : '☁️'}
+                            </div>
+                            <div style="font-size:0.75rem; opacity:0.8;">
+                               <span style="font-weight:700;">${maxT}°</span> / ${minT}°
+                            </div>
+                        </div>
+                    `;
+          }).join('')}
+            </div>
+          `;
+        };
+
+        const renderDetailedStats = () => {
+          // Calculate Max Wave for Selected Day
+          let maxWave = '-';
+          if (marineHourly && marineHourly.wave_height) {
+            const wavesForDay = hourlyIndices.map(i => marineHourly.wave_height[i]).filter(w => w !== undefined);
+            if (wavesForDay.length > 0) {
+              maxWave = Math.max(...wavesForDay).toFixed(1) + 'm';
+            }
+          }
+
+          return `
+               <div style="background:rgba(255,255,255,0.08); border-radius:1rem; padding:1.5rem 1rem; display:grid; grid-template-columns: repeat(4, 1fr); gap:1rem; margin-bottom:1.5rem;">
+                  
+                  <!-- WIND -->
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem; text-align:center;">
+                      <div style="background:#3b82f6; color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                         <i data-lucide="wind" style="width:20px;"></i>
+                      </div>
+                      <div style="line-height:1.2;">
+                         <div style="font-size:0.75rem; opacity:0.7;">Vento</div>
+                         <div style="font-weight:700; font-size:1rem; white-space:nowrap;">${selectedDay.windMax}</div>
+                      </div>
+                  </div>
+
+                  <!-- WAVES -->
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem; text-align:center;">
+                      <div style="background:#60a5fa; color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                         <i data-lucide="waves" style="width:20px;"></i>
+                      </div>
+                      <div style="line-height:1.2;">
+                         <div style="font-size:0.75rem; opacity:0.7;">Onde</div>
+                         <div style="font-weight:700; font-size:1rem; white-space:nowrap;">${maxWave}</div>
+                      </div>
+                  </div>
+
+                  <!-- SUN -->
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem; text-align:center;">
+                      <div style="background:#fbbf24; color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                         <i data-lucide="sun" style="width:20px;"></i>
+                      </div>
+                      <div style="line-height:1.2;">
+                         <div style="font-size:0.75rem; opacity:0.7;">Sole</div>
+                         <div style="font-weight:700; font-size:1rem; white-space:nowrap;">${selectedDay.sunrise}<span style="opacity:0.4; margin:0 3px;">/</span>${selectedDay.sunset}</div>
+                      </div>
+                  </div>
+
+                  <!-- UV -->
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem; text-align:center;">
+                      <div style="background:#a78bfa; color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                         <i data-lucide="sun-dim" style="width:20px;"></i>
+                      </div>
+                      <div style="line-height:1.2;">
+                         <div style="font-size:0.75rem; opacity:0.7;">UV</div>
+                         <div style="font-weight:700; font-size:1rem; white-space:nowrap;">${selectedDay.uv}</div>
+                      </div>
+                  </div>
+               </div>
+          `;
+        };
+
+        const renderHourlyTable = () => {
+          if (!hourlyIndices.length) return '<p>Nessun dato orario.</p>';
+
+          if (!this.state.hourlyDisplayMode) this.state.hourlyDisplayMode = '1h';
+          const mode = this.state.hourlyDisplayMode;
+
+          let displayIndices = hourlyIndices;
+          if (mode === '3h') {
+            displayIndices = hourlyIndices.filter((val, idx) => idx % 3 === 0);
+          }
+
+          return `
+               <div style="background:rgba(255,255,255,0.03); border-radius:1rem; overflow:hidden; border:1px solid rgba(255,255,255,0.05);">
+                  
+                  <!-- TABLE HEADER WITH TOGGLE -->
+                  <div style="padding:0.8rem; background:rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:space-between;">
+                     <div style="font-weight:700; font-size:0.95rem;">Dettaglio Orario</div>
+                     
+                     <div class="hourly-toggle-container">
+                         <button class="hourly-toggle-btn ${mode === '1h' ? 'active' : ''}" onclick="window.App.setHourlyDisplayMode('1h')">1h</button>
+                         <button class="hourly-toggle-btn ${mode === '3h' ? 'active' : ''}" onclick="window.App.setHourlyDisplayMode('3h')">3h</button>
+                     </div>
+                  </div>
+
+                  <div style="overflow-x:auto;">
+                      <table style="width:100%; border-collapse:collapse; font-size:0.95rem; table-layout: fixed;">
+                         <thead style="color:var(--text-muted); font-size:0.8rem;">
+                            <tr>
+                               <th style="padding:0.5rem; text-align:center; width:15%;">Ora</th>
+                               <th style="padding:0.5rem; text-align:center; width:10%;">Meteo</th>
+                               <th style="padding:0.5rem; text-align:center; width:15%;">Temp</th>
+                               <th style="padding:0.5rem; text-align:center; width:20%;">Vento</th>
+                               <th style="padding:0.5rem; text-align:center; width:20%;">Pioggia</th>
+                               <th style="padding:0.5rem; text-align:center; width:20%;">Onde</th>
+                            </tr>
+                         </thead>
+                         <tbody>
+                            ${displayIndices.map((i, idx) => {
+            const timeFull = currentHourlyParams.time[i];
+            const hour = timeFull.split('T')[1].substring(0, 5);
+            const hCode = currentHourlyParams.weather_code[i];
+            const hTemp = Math.round(currentHourlyParams.temperature_2m[i]);
+            const hWind = Math.round(currentHourlyParams.wind_speed_10m[i]);
+            const hDir = WeatherService.getWindDirection(currentHourlyParams.wind_direction_10m ? currentHourlyParams.wind_direction_10m[i] : 0);
+            const hRain = currentHourlyParams.precipitation_probability ? currentHourlyParams.precipitation_probability[i] : 0;
+
+            // Marine
+            let waveText = '-';
+            if (marineHourly && marineHourly.wave_height) {
+              const waveH = marineHourly.wave_height[i];
+              if (waveH !== undefined) waveText = `${waveH.toFixed(1)}m`;
+            }
+
+            const rowClass = idx % 2 === 0 ? 'weather-table-row' : 'weather-table-row weather-table-row-odd';
+
+            return `
+                                   <tr class="${rowClass}">
+                                      <td style="padding:0.5rem; font-weight:600; text-align:center;">${hour}</td>
+                                      <td style="padding:0.5rem; text-align:center;">
+                                          ${WeatherService.getWeatherLabel(hCode).includes('Pioggia') ? '🌧️' :
+                hCode === 0 ? '☀️' : hCode < 3 ? '⛅' : '☁️'}
+                                      </td>
+                                      <td style="padding:0.5rem; text-align:center; font-weight:700;">${hTemp}°</td>
+                                      <td style="padding:0.5rem; text-align:center;">
+                                          <div style="display:flex; align-items:center; justify-content:center; gap:4px;">
+                                              <span>${hWind}</span>
+                                              <span style="font-size:0.7rem; opacity:0.7;">${hDir}</span>
+                                          </div>
+                                      </td>
+                                      <td style="padding:0.5rem; text-align:center; color:${hRain > 30 ? '#60a5fa' : 'inherit'};">
+                                          ${hRain > 0 ? `${hRain}%` : '-'}
+                                      </td>
+                                      <td style="padding:0.5rem; text-align:center; color:${waveText !== '-' && parseFloat(waveText) > 1 ? '#ef4444' : 'inherit'}">
+                                          ${waveText}
+                                      </td>
+                                   </tr>
+                                `;
+          }).join('')}
+                         </tbody>
+                      </table>
+                  </div>
+               </div>
+            `;
+        };
 
         return `
                   <div class="score-card">
@@ -1625,13 +1793,16 @@ const App = {
                              ${scoreData.raw >= 4 ? "Condizioni ideali per nuotare! 🏊" :
             scoreData.raw >= 2.5 ? "Buono, ma occhio al vento/onde. 🏄" : "Condizioni difficili. Prudenza! ⚠️"}
                          </div>
+                         <div style="font-size:0.75rem; color:rgba(255,255,255,0.9); margin-top:0.5rem; line-height:1.4;">
+                             Indice 1-5 basato su: Copertura nuvolosa, Vento, Altezza onde (marine) e Temperatura.
+                         </div>
                      </div>
                      <div class="score-circle" style="color:${color};">
                          ${scoreData.score}
                      </div>
                   </div>
 
-                  <!-- WINDY MAP (Standalone, Outside Weather Widget) -->
+                  <!-- WINDY MAP -->
                   <div style="margin-bottom: 2rem; border-radius: 1rem; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                       <div style="background: rgba(255,255,255,0.05); padding: 0.8rem 1.2rem; display:flex; justify-content:space-between; align-items:center;">
                           <h4 style="margin:0; opacity:0.9;">Mappa Vento & Mare</h4>
@@ -1645,94 +1816,27 @@ const App = {
                       </iframe>
                   </div>
 
-                  <!-- NEW WEATHER SECTION: TABLE + DETAIL -->
+                  <!-- NEW WEATHER SECTION: DASHBOARD (Split View) -->
                   <div class="weather-container">
+                      <h3 style="margin-bottom:1.5rem; font-size:1.2rem;">Previsioni Dettagliate</h3>
                       
-                      <!-- 1. DAILY TABLE (Selectable) -->
-                      <div class="weather-widget" style="padding:0; overflow:hidden;">
-                          <div style="padding:1rem; background:rgba(255,255,255,0.05); font-weight:600;">Previsioni Settimanali</div>
-                          <div style="display:flex; flex-direction:column;">
-                              ${daily.time.slice(0, 7).map((t, i) => {
-              const d = getDayData(i);
-              const dayName = new Date(t).toLocaleDateString('it-IT', { weekday: 'long' });
-              const dateNum = new Date(t).getDate();
-              const isSelected = i === selectedDayOffset;
+                      <!-- 1. TOP STATS (Single Row) -->
+                      ${renderDetailedStats()}
 
-              return `
-                                    <div onclick="window.App.selectDay(${i})" 
-                                         style="display:grid; grid-template-columns: 2fr 1fr 2fr 1.5fr; gap:0.5rem; align-items:center; padding: 1rem; cursor:pointer; transition:background 0.2s; border-bottom:1px solid rgba(255,255,255,0.05); background: ${isSelected ? 'rgba(255,255,255,0.15)' : 'transparent'};">
-                                         
-                                         <div style="display:flex; flex-direction:column;">
-                                            <span style="text-transform:capitalize; font-weight:600; color:${isSelected ? 'white' : 'var(--text-muted)'}">${dayName} ${dateNum}</span>
-                                            <span style="font-size:0.8rem; opacity:0.7;">${WeatherService.getWeatherLabel(d.code)}</span>
-                                         </div>
-
-                                         <div style="font-size:1.5rem;">
-                                            ${WeatherService.getWeatherLabel(d.code).includes('Pioggia') ? '🌧️' :
-                  WeatherService.getWeatherLabel(d.code).includes('Sole') || d.code === 0 ? '☀️' : '☁️'}
-                                         </div>
-
-                                         <div style="text-align:right; font-weight:600;">
-                                            ${d.min}° / ${d.max}°
-                                         </div>
-                                         
-                                         <div style="text-align:right; font-size:0.85rem; opacity:0.8;">
-                                            <i data-lucide="wind" style="width:12px; display:inline-block;"></i> ${d.windMax}
-                                         </div>
-                                    </div>
-                                  `;
-            }).join('')}
-                          </div>
+                      <!-- 2. SPLIT DASHBOARD -->
+                      <div class="weather-dashboard-grid">
+                          <!-- LEFT: DAYS -->
+                          ${renderDaySelector()}
+                          
+                          <!-- RIGHT: TABLE -->
+                          ${renderHourlyTable()}
                       </div>
-
-                      <!-- 2. SELECTED DAY DETAIL -->
-                      <div class="weather-widget" style="margin-top:1.5rem;">
-                           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                               <h4 style="margin:0;">Dettagli: ${new Date(selectedDay.time).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</h4>
-                               <div style="font-weight:700; font-size:1.2rem;">${selectedDay.max}° <span style="font-size:0.9rem; opacity:0.7;">max</span></div>
-                           </div>
-
-                           <!-- Hourly for Selected Day -->
-                           <div style="display:flex; overflow-x:auto; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:1rem;">
-                               ${hourlyIndices.length > 0 ? hourlyIndices.map(idx => {
-              const hCode = currentHourlyParams.weather_code[idx];
-              const hTemp = Math.round(currentHourlyParams.temperature_2m[idx]);
-              const hWind = Math.round(currentHourlyParams.wind_speed_10m[idx]);
-              const timeStr = currentHourlyParams.time[idx].split('T')[1];
-
-              return `
-                                       <div style="min-width:70px; display:flex; flex-direction:column; align-items:center; gap:0.3rem; padding:0.5rem; background:rgba(255,255,255,0.05); border-radius:0.5rem;">
-                                           <span style="font-size:0.8rem; opacity:0.8;">${timeStr}</span>
-                                           <span style="font-size:1.5rem;">${WeatherService.getWeatherLabel(hCode).includes('Pioggia') ? '🌧️' :
-                  WeatherService.getWeatherLabel(hCode).includes('Sole') || hCode === 0 ? '☀️' : '☁️'
-                }</span>
-                                           <span style="font-weight:700;">${hTemp}°</span>
-                                           <span style="font-size:0.7rem; opacity:0.7;">💨 ${hWind}</span>
-                                       </div>
-                                   `;
-            }).join('') : '<div style="padding:1rem; opacity:0.6;">Dati orari non disponibili per questa data (limite API)</div>'}
-                           </div>
-                           
-                           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
-                               <div style="background:rgba(255,255,255,0.05); padding:0.8rem; border-radius:0.5rem; display:flex; align-items:center; gap:0.5rem;">
-                                   <i data-lucide="sun"></i>
-                                   <div>
-                                       <div style="font-size:0.7rem; opacity:0.7;">UV Index Max</div>
-                                       <div style="font-weight:600;">${selectedDay.uv}</div>
-                                   </div>
-                               </div>
-                               <div style="background:rgba(255,255,255,0.05); padding:0.8rem; border-radius:0.5rem; display:flex; align-items:center; gap:0.5rem;">
-                                   <i data-lucide="wind"></i>
-                                   <div>
-                                       <div style="font-size:0.7rem; opacity:0.7;">Vento Max</div>
-                                       <div style="font-weight:600;">${selectedDay.windMax} km/h</div>
-                                   </div>
-                               </div>
-                           </div>
+                      
+                      <div style="margin-top:2rem; font-size:0.8rem; opacity:0.6; text-align:center;">
+                          Dati orari per: <span style="font-weight:700;">${selectedDay.dateFormatted || 'Oggi'}</span>
                       </div>
-
                   </div>
-                `;
+        `;
       })()} 
           </div>
         </div>

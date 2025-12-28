@@ -406,7 +406,8 @@ h4 {
     }
 
     .gallery-hero {
-        height: 220px; /* Mobile optimized height */
+        height: 220px;
+        /* Mobile optimized height */
     }
 }
 
@@ -488,5 +489,155 @@ h4 {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Gallery Arrows */
+.gallery-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    /* White transparent base */
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+    /* Hidden by default */
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    /* Glass effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Weather Table Rows */
+.weather-table-row td,
+.weather-table-row-odd td {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3) !important;
+}
+
+.weather-table-row-odd {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Weather Dashboard Layout */
+.weather-dashboard-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 640px) {
+    .weather-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Vertical Day Selector */
+.day-selector-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.day-item-vertical {
+    padding: 0.8rem 0.5rem;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.day-item-vertical:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.day-item-vertical.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Hourly Toggle */
+.hourly-toggle-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.2rem;
+    gap: 0.2rem;
+}
+
+.hourly-toggle-btn {
+    padding: 0.3rem 0.8rem;
+    border-radius: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.6);
+    /* Dark background for visibility */
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s;
+}
+
+/* Mobile Breakpoint for Hero Grid */
+@media (max-width: 768px) {
+    .hero-grid-split {
+        grid-template-columns: 1fr !important;
+    }
+
+    .hero-grid-split>div .map-container {
+        height: 250px !important;
+    }
+}
+
+.hourly-toggle-btn.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+.gallery-arrow:hover {
+    background: rgba(255, 255, 255, 0.4);
+    /* More visible on hover */
+    transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-arrow.left {
+    left: 10px;
+}
+
+.gallery-arrow.right {
+    right: 10px;
+}
+
+/* Show on hover of the container */
+.group:hover .gallery-arrow {
+    opacity: 1;
+}
+
+/* Always show on mobile to avoid touch issues */
+@media (max-width: 768px) {
+    .gallery-arrow {
+        opacity: 0.8;
+        width: 36px;
+        height: 36px;
     }
 }
