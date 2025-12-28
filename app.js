@@ -779,7 +779,7 @@ const App = {
     return `
       <footer style="padding: 2rem 0; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
         <div class="container">
-          <p>&copy; 2025 BeachFinder. Dati: Open-Meteo & OpenStreetMap & Flickr.</p>
+          <p>&copy; 2025 BeachFinder. Dati: Open-Meteo & OpenStreetMap & Flickr <span style="font-size:0.7rem; opacity:0.5;">(v22)</span></p>
         </div>
       </footer>
     `;
@@ -1610,7 +1610,7 @@ const App = {
 
         const renderDaySelector = () => {
           return `
-            <div class="day-selector-vertical">
+            <div class="day-selector-horizontal">
                 ${daily.time.slice(0, 7).map((t, i) => {
             const date = new Date(t);
             const dayName = date.toLocaleDateString('it-IT', { weekday: 'short' }).toUpperCase();
@@ -1623,7 +1623,7 @@ const App = {
             const maxT = Math.round(daily.temperature_2m_max[i]);
 
             return `
-                        <div class="day-item-vertical ${isSelected ? 'active' : ''}" onclick="window.App.selectDay(${i})">
+                        <div class="day-item-horizontal ${isSelected ? 'active' : ''}" onclick="window.App.selectDay(${i})">
                             <div style="font-weight:700; font-size:0.9rem; line-height:1;">${dayName} ${dayNum}</div>
                             <div style="font-size:1.5rem; margin:0.2rem 0;">
                                 ${WeatherService.getWeatherLabel(dailyCode).includes('Pioggia') ? '🌧️' :
@@ -1805,32 +1805,30 @@ const App = {
                   <!-- WINDY MAP -->
                   <div style="margin-bottom: 2rem; border-radius: 1rem; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                       <div style="background: rgba(255,255,255,0.05); padding: 0.8rem 1.2rem; display:flex; justify-content:space-between; align-items:center;">
-                          <h4 style="margin:0; opacity:0.9;">Mappa Vento & Mare</h4>
-                          <span style="font-size:0.8rem; opacity:0.6;">Dati in tempo reale (Windy.com)</span>
+                          <div style="font-weight:600; font-size:0.9rem; color: #fff;">Mappa Vento & Mare</div>
+                          <div style="font-size:0.8rem; opacity:0.7;">Dati in tempo reale (Windy.com)</div>
                       </div>
                       <iframe 
                             width="100%" 
-                            height="400" 
-                            src="https://embed.windy.com/embed2.html?lat=${b.lat}&lon=${b.lng}&detailLat=${b.lat}&detailLon=${b.lng}&width=650&height=450&zoom=9&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" 
-                            frameborder="0">
+                            height="350" 
+                            src="https://embed.windy.com/embed2.html?lat=${b.lat}&lon=${b.lng}&detailLat=${b.lat}&detailLon=${b.lng}&width=650&height=450&zoom=11&level=surface&overlay=waves&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" 
+                            frameborder="0"
+                            style="display:block;">
                       </iframe>
                   </div>
 
-                  <!-- NEW WEATHER SECTION: DASHBOARD (Split View) -->
+                  <!-- NEW WEATHER SECTION: DASHBOARD (Stacked View) -->
                   <div class="weather-container">
                       <h3 style="margin-bottom:1.5rem; font-size:1.2rem;">Previsioni Dettagliate</h3>
                       
-                      <!-- 1. TOP STATS (Single Row) -->
+                      <!-- DETAILED STATS (Top) -->
                       ${renderDetailedStats()}
+                      
+                      <!-- DAY SELECTOR (Horizontal) -->
+                      ${renderDaySelector()}
 
-                      <!-- 2. SPLIT DASHBOARD -->
-                      <div class="weather-dashboard-grid">
-                          <!-- LEFT: DAYS -->
-                          ${renderDaySelector()}
-                          
-                          <!-- RIGHT: TABLE -->
-                          ${renderHourlyTable()}
-                      </div>
+                      <!-- HOURLY TABLE (Bottom) -->
+                      ${renderHourlyTable()}
                       
                       <div style="margin-top:2rem; font-size:0.8rem; opacity:0.6; text-align:center;">
                           Dati orari per: <span style="font-weight:700;">${selectedDay.dateFormatted || 'Oggi'}</span>

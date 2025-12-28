@@ -407,9 +407,55 @@ h4 {
 
     .gallery-hero {
         height: 220px;
-        /* Mobile optimized height */
     }
 }
+
+/* Horizontal Day Selector (Restored/New) */
+.day-selector-horizontal {
+    display: flex;
+    overflow-x: auto;
+    gap: 0.8rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.day-selector-horizontal::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.day-item-horizontal {
+    min-width: 80px;
+    padding: 0.8rem 0.6rem;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    /* Slightly lighter than vertical */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+}
+
+.day-item-horizontal:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.day-item-horizontal.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
 
 /* --- DESTINATIONS NAV --- */
 .destinations-box {
