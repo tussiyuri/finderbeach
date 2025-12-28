@@ -779,7 +779,7 @@ const App = {
     return `
       <footer style="padding: 2rem 0; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
         <div class="container">
-          <p>&copy; 2025 BeachFinder. Dati: Open-Meteo & OpenStreetMap & Flickr <span style="font-size:0.7rem; opacity:0.5;">(v22)</span></p>
+          <p>&copy; 2025 BeachFinder. Dati: Open-Meteo & OpenStreetMap & Flickr <span style="font-size:0.7rem; opacity:0.5;">(v23)</span></p>
         </div>
       </footer>
     `;
@@ -1502,7 +1502,7 @@ const App = {
             <div style="margin-bottom:1rem;"><button class="btn btn-ghost" onclick="window.App.goBack()"><i data-lucide="arrow-left"></i> Indietro</button></div>
             
             <!-- HERO GRID SPLIT -->
-            <div class="hero-grid-split" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
+            <div class="hero-grid-split">
                 
                 <!-- COL 1: PHOTO & GALLERY -->
                 <div class="group" style="position:relative;">
